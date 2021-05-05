@@ -1,12 +1,33 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+	ViewData["Title"] = "Home page";
 }
 
-<div id="ts-example">
-	<br />
-	<button type="button" class="btn btn-primary btn-md" onclick="TSButton()">
-		Click Me
-	</button>
-</div>
+<div id='map' style='width: 1200px; height: 600px;'></div>
+<script>
+	mapboxgl.accessToken = 'pk.eyJ1IjoiYmxhY2tuZXIiLCJhIjoiY2tvYW5ndWJjMGV4bTJub3l1bnNvY2s1dSJ9.8qakfP8PGFurxgMJOdYJ3g';
+	var map = new mapboxgl.Map({
+		container: 'map',
+		style: 'mapbox://styles/mapbox/streets-v11',
+		center: [-100, 41],
+		zoom: 3
+	});
+
+	// Add zoom and rotation controls to the map.
+	map.addControl(new mapboxgl.NavigationControl());
+
+	// add a geocoding search bar
+	const geocoder = new MapboxGeocoder({
+		accessToken: mapboxgl.accessToken,
+		zoom: 4,
+		placeholder: 'Search for USA address',
+		mapboxgl: mapboxgl
+	});
+
+	// limit search to america
+	geocoder.setCountries('us');
+
+	// Add the control to the top-left area of the map
+	map.addControl(geocoder, 'top-left');
+</script>
