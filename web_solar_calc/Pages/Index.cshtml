@@ -4,7 +4,23 @@
 	ViewData["Title"] = "Home page";
 }
 
+<div>
+	Draw a polygon on the map to calculate the <span style="font-weight: bold">nominal power</span> of a solar installation at that site. Double-click to complete the polygon.
+	<div>Calculated nominal power:</div>0<span id="npCalc"></span>W
+</div>
 <div id='map' style='width: 1200px; height: 600px;'></div>
+<div id="menu">
+	<!-- See a list of Mapbox-hosted public styles at -->
+	<!-- https://docs.mapbox.com/api/maps/styles/#mapbox-styles -->
+	<input id="streets-v11" type="radio" name="rtoggle" value="streets" checked="checked">
+	<label for="streets-v11">streets</label>
+	<input id="satellite-v9" type="radio" name="rtoggle" value="satellite">
+	<label for="satellite-v9">satellite</label>
+	<input id="light-v10" type="radio" name="rtoggle" value="light">
+	<label for="light-v10">light</label>
+	<input id="dark-v10" type="radio" name="rtoggle" value="dark">
+	<label for="dark-v10">dark</label>
+</div>
 <script>
 	mapboxgl.accessToken = 'pk.eyJ1IjoiYmxhY2tuZXIiLCJhIjoiY2tvYW5ndWJjMGV4bTJub3l1bnNvY2s1dSJ9.8qakfP8PGFurxgMJOdYJ3g';
 	var map = new mapboxgl.Map({
@@ -30,4 +46,53 @@
 
 	// Add the control to the top-left area of the map
 	map.addControl(geocoder, 'top-left');
+
+	// set up radio buttons to change map's style
+	var layerList = document.getElementById('menu');
+	var inputs = layerList.getElementsByTagName('input');
+
+	function switchLayer(layer)
+	{
+		var layerId = layer.target.id;
+		map.setStyle('mapbox://styles/mapbox/' + layerId);
+	}
+
+	for (var i = 0; i < inputs.length; i++)
+		inputs[i].onclick = switchLayer;
+
+	// ctrl to allow drawing a polygon on the map
+	var draw = new MapboxDraw({
+		displayControlsDefault: false,
+		controls: {
+			polygon: true,
+			trash: true
+		},
+		defaultMode: 'draw_polygon'
+	});
+	map.addControl(draw);
+
+	map.on('draw.create', updateArea);
+	map.on('draw.delete', updateArea);
+	map.on('draw.update', updateArea);
+
+	function updateArea(e)
+	{
+		var data = draw.getAll();
+		var answer = document.getElementById('calculated-area');
+		if (data.features.length > 0)
+		{
+			var area = turf.area(data);
+			// restrict to area to 2 decimal points
+			var rounded_area = Math.round(area * 100) / 100;
+			answer.innerHTML =
+				'<p><strong>' +
+				rounded_area +
+				'</strong></p><p>square meters</p>';
+		} else
+		{
+			answer.innerHTML = '';
+			if (e.type !== 'draw.delete')
+				alert('Use the draw tools to draw a polygon!');
+		}
+	}
 </script>
