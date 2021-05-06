@@ -18,8 +18,8 @@
 	<input id="satellite-v9" type="radio" name="rtoggle" value="satellite">
 	<label for="satellite-v9">satellite</label>
 </div>
-<div>Installation tilt: </div>
-<input type="number" min="0" max="90" value="0" />
+<div>Installation surface tilt: <input id="tiltInput" type="number" min="0" max="89" value="0" />°</div>
+<div>Calculated surface area of installation: <span id="surfaceArea">0 m<sup>2</sup></span></div>
 <script>
 	mapboxgl.accessToken = 'pk.eyJ1IjoiYmxhY2tuZXIiLCJhIjoiY2tvYW5ndWJjMGV4bTJub3l1bnNvY2s1dSJ9.8qakfP8PGFurxgMJOdYJ3g';
 	var map = new mapboxgl.Map({
@@ -70,11 +70,20 @@
 	});
 	map.addControl(draw);
 
-	map.on('draw.create', updateNomPower);
-	map.on('draw.delete', updateNomPower);
-	map.on('draw.update', updateNomPower);
+	map.on('draw.create', onPolygonChange);
+	map.on('draw.delete', onPolygonChange);
+	map.on('draw.update', onPolygonChange);
 
-	function updateNomPower(e)
+	// called when the user adds/removes/updates a polygon. Updates the nominal power
+	// and surface area calculations
+	function onPolygonChange()
+	{
+		updateNomPower();
+		updateSurfaceArea();
+	}
+
+	// updates the nominal power calculation
+	function updateNomPower()
 	{
 		var data = draw.getAll();
 		var answer = document.getElementById('npCalc');
@@ -85,23 +94,24 @@
 			const eff = parseFloat(document.getElementById("efficiencyInput").value) / 100;
 			// get the power assuming 1kW per square meter
 			let power = eff * area;
+
 			// round the result
 			power = Math.round(power * 100) / 100;
 			// format with commas (https://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript)
 			power = power.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
 			answer.innerHTML = power + " kW";
-		} else
-		{
-			answer.innerHTML = '0 kW';
-			if (e.type !== 'draw.delete')
-				alert('Use the draw tools to draw a polygon!');
 		}
+		else
+			answer.innerHTML = '0 kW';
 	}
 
+	// called when the efficiency input is changed. Updates the nominal power value
 	function onEfficiencyChange()
 	{
 		const eff = document.getElementById("efficiencyInput");
-		const currValue = parseFloat(document.getElementById("efficiencyInput").value);
+		const currValue = parseFloat(eff.value);
+
 		// validate the input
 		if (currValue < 0)
 			eff.value = "0";
@@ -113,5 +123,52 @@
 	}
 
 	document.getElementById("efficiencyInput").onchange = onEfficiencyChange;
+
+	// called when the surface tilt value is changed. Updates the surface area calculation
+	function onTiltChange()
+	{
+		const tilt = document.getElementById("tiltInput");
+		const currValue = parseFloat(tilt.value);
+
+		// validate the input
+		if (currValue < 0)
+			tilt.value = "0";
+		else if (currValue > 89)
+			tilt.value = "89";
+
+		// recalculate the surface area
+		updateSurfaceArea();
+	}
+
+	document.getElementById("tiltInput").onchange = onTiltChange;
+
+	// updates the surface area calculation
+	function updateSurfaceArea()
+	{
+		var data = draw.getAll();
+		var answer = document.getElementById('surfaceArea');
+		if (data.features.length > 0)
+		{
+			var area = turf.area(data);
+			// get the tilt
+			let tilt = parseFloat(document.getElementById("tiltInput").value);
+			// convert to radians...
+			tilt *= Math.PI / 180;
+
+			// get the projected area
+			// we need to divide because the angle is defined as the angle between the surface and the ground,
+			// and we want to project onto that surface
+			area /= Math.cos(tilt);
+
+			// round the result
+			area = Math.round(area * 100) / 100;
+			// format with commas (https://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript)
+			area = area.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+			answer.innerHTML = area + " m<sup>2</sup>";
+		}
+		else
+			answer.innerHTML = '0 m<sup>2</sup>';
+	}
 
 </script>
