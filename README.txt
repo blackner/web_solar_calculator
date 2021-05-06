@@ -1,4 +1,6 @@
-﻿For the nominal power calculation, I am assuming that the nominal power depends only on the surface area and the energy conversion efficiency of the installation. I assume that the sun shines perpendicular to the earth's surface, and the angle between the earth's surface and the installation's surface is exactly defined by the "tilt" input. I also assume that the light intensity from the sun is 1kW/square meter (from https://www.pveducation.org/pvcdrom/solar-cell-operation/effect-of-light-intensity).
+﻿This submission includes a Visual Studio solution. The only setup required should be to open the solution in Visual Studio and run the program through IIS. 
+
+For the nominal power calculation, I am assuming that the nominal power depends only on the surface area and the energy conversion efficiency of the installation. I assume that the sun shines perpendicular to the earth's surface, and the angle between the earth's surface and the installation's surface is exactly defined by the "tilt" input. I also assume that the light intensity from the sun is 1kW/square meter (from https://www.pveducation.org/pvcdrom/solar-cell-operation/effect-of-light-intensity).
 
 Test cases:
 User enters an invalid location in the search box
