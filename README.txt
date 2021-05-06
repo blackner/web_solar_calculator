@@ -15,6 +15,9 @@ User types in a negative tilt value
 User types in a tilt value greater than 89
 User enters 45 as a tilt value (calculated surface area should increase by about 1.43 times)
 User enters 89 as a tilt value (calculated surface area should increase significantly)
+User draws a polygon and changes the tilt value
+User changes the tilt or efficiency value when no polygon exists on the map
+User clicks the 'delete polygon' button with no polygons on the map
 
 Nice-to-haves/possible enhancements:
 Allow polygons that contain "holes"
