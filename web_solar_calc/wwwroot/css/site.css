@@ -10,12 +10,21 @@ for details on configuring this project to bundle and minify static web assets. 
     font-style: italic
 }
 
+#efficiencyInput {
+    height: 25px;
+    width: 58px;
+}
+
+#npCalc {
+    font-weight: bold;
+}
+
 .pb-3 {
     position: absolute;
 }
 
 .mapboxgl-map {
-    margin-top: 15px;
+    margin-top: 5px;
 }
 
 a.navbar-brand {

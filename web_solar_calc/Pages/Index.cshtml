@@ -6,7 +6,8 @@
 
 <div>
 	Draw a polygon on the map to calculate the <span style="font-weight: bold">nominal power</span> of a solar installation at that site. Double-click to complete the polygon.
-	<div>Calculated nominal power:</div>0<span id="npCalc"></span>W
+	<div>Efficiency of energy conversion: <input id="efficiencyInput" type="number" min="0" max="100" value="100" />%</div>
+	<div>Calculated nominal power: <span id="npCalc">0 kW</span></div>
 </div>
 <div id='map' style='width: 1200px; height: 600px;'></div>
 <div id="menu">
@@ -16,11 +17,9 @@
 	<label for="streets-v11">streets</label>
 	<input id="satellite-v9" type="radio" name="rtoggle" value="satellite">
 	<label for="satellite-v9">satellite</label>
-	<input id="light-v10" type="radio" name="rtoggle" value="light">
-	<label for="light-v10">light</label>
-	<input id="dark-v10" type="radio" name="rtoggle" value="dark">
-	<label for="dark-v10">dark</label>
 </div>
+<div>Installation tilt: </div>
+<input type="number" min="0" max="90" value="0" />
 <script>
 	mapboxgl.accessToken = 'pk.eyJ1IjoiYmxhY2tuZXIiLCJhIjoiY2tvYW5ndWJjMGV4bTJub3l1bnNvY2s1dSJ9.8qakfP8PGFurxgMJOdYJ3g';
 	var map = new mapboxgl.Map({
@@ -36,7 +35,7 @@
 	// add a geocoding search bar
 	const geocoder = new MapboxGeocoder({
 		accessToken: mapboxgl.accessToken,
-		zoom: 4,
+		zoom: 17,
 		placeholder: 'Search for USA address',
 		mapboxgl: mapboxgl
 	});
@@ -71,28 +70,48 @@
 	});
 	map.addControl(draw);
 
-	map.on('draw.create', updateArea);
-	map.on('draw.delete', updateArea);
-	map.on('draw.update', updateArea);
+	map.on('draw.create', updateNomPower);
+	map.on('draw.delete', updateNomPower);
+	map.on('draw.update', updateNomPower);
 
-	function updateArea(e)
+	function updateNomPower(e)
 	{
 		var data = draw.getAll();
-		var answer = document.getElementById('calculated-area');
+		var answer = document.getElementById('npCalc');
 		if (data.features.length > 0)
 		{
 			var area = turf.area(data);
-			// restrict to area to 2 decimal points
-			var rounded_area = Math.round(area * 100) / 100;
-			answer.innerHTML =
-				'<p><strong>' +
-				rounded_area +
-				'</strong></p><p>square meters</p>';
+			// get the efficiency
+			const eff = parseFloat(document.getElementById("efficiencyInput").value) / 100;
+			// get the power assuming 1kW per square meter
+			let power = eff * area;
+			// round the result
+			power = Math.round(power * 100) / 100;
+			// format with commas (https://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript)
+			power = power.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+			answer.innerHTML = power + " kW";
 		} else
 		{
-			answer.innerHTML = '';
+			answer.innerHTML = '0 kW';
 			if (e.type !== 'draw.delete')
 				alert('Use the draw tools to draw a polygon!');
 		}
 	}
+
+	function onEfficiencyChange()
+	{
+		const eff = document.getElementById("efficiencyInput");
+		const currValue = parseFloat(document.getElementById("efficiencyInput").value);
+		// validate the input
+		if (currValue < 0)
+			eff.value = "0";
+		else if (currValue > 100)
+			eff.value = "100";
+
+		// recalculate the nominal power
+		updateNomPower(null);
+	}
+
+	document.getElementById("efficiencyInput").onchange = onEfficiencyChange;
+
 </script>
