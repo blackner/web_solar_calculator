@@ -9,6 +9,10 @@ User types in a negative efficiency value
 User types in an efficiency value greater than 100
 User draws a polygon and changes the efficiency value
 User draws a polygon and deletes it
+User types in a negative tilt value
+User types in a tilt value greater than 89
+User enters 45 as a tilt value (calculated surface area should increase by about 1.43 times)
+User enters 89 as a tilt value (calculated surface area should increase significantly)
 
 Nice-to-haves/possible enhancements:
 Allow polygons that contain "holes"
